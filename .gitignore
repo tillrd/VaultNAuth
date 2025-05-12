@@ -1,0 +1,31 @@
+# Python virtual environments
+.venv/
+venv/
+
+# Certificate files (sensitive)
+certificates/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
+
+# PyCharm/IDEA project files
+.idea/
+*.iml
+
+# VSCode project files
+.vscode/
+
+# Test output
+*.log
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Other
+.env 

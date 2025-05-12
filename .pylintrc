@@ -1,0 +1,21 @@
+[MASTER]
+ignore=venv,.venv,certificates
+
+[MESSAGES CONTROL]
+disable=
+    C0301,  # line-too-long
+    R0914,  # too-many-locals
+    R0915,  # too-many-statements
+    W0718,  # broad-exception-caught
+    C0415,  # import-outside-toplevel
+    C0103,  # invalid-name
+    E0611,  # no-name-in-module
+
+[FORMAT]
+max-line-length=120
+
+[REPORTS]
+output-format = colorized
+
+[TYPECHECK]
+ignored-modules=jwt,requests,cryptography 
