@@ -23,7 +23,7 @@ A developer-friendly CLI tool for generating and testing JWT tokens with self-si
 
 After generating your JWT token, VaultNAuth automatically verifies your setup by making a request to the VaultN API `/api/v1/ping` endpoint. This endpoint checks both connectivity and the validity of your JWT authorization. If your certificate and token are correctly configured and uploaded, you will receive a successful response from VaultN.
 
-- **API Reference:** [VaultN /api/v1/ping documentation](https://vaultn.readme.io/reference/get_api-v1-ping-3) 
+- **API Reference:** [VaultN /api/v1/ping](https://vaultn.readme.io/reference/get_api-v1-ping-3) 
 
 ---
 
