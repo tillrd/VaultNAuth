@@ -451,7 +451,7 @@ def main():
         print(" └────────────────────────────────────────────────────────────────────┘")
         if isinstance(token, bytes):
             token = token.decode("utf-8")
-        print(f"\nAuthorization: Bearer {token}\n")
+        print("\nAuthorization: Bearer {}\n".format(token))
         decoded = jwt.decode(token, options={"verify_signature": False})
         exp = datetime.datetime.fromtimestamp(decoded["exp"], tz=datetime.timezone.utc)
         iat = datetime.datetime.fromtimestamp(decoded["iat"], tz=datetime.timezone.utc)
