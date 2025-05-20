@@ -284,15 +284,15 @@ def verify_certificate_in_vaultn(token, user_guid, api_base_url, env_desc):
             print("Please check your IP whitelisting and try again later.")
             return
         if resp.status_code == 401 and "No certificate for owner" in resp.text:
-            print(f"❌ VaultN did not recognize the certificate for this GUID and thumbprint in {env_desc}.")
-            print(f"   ➤ Make sure you've uploaded the correct certificate in the {env_desc} environment (Sandbox vs Prod).")
-            print("   ➤ Ensure the certificate is assigned to GUID:", user_guid)
+            print("❌ VaultN did not recognize the certificate for this GUID and thumbprint.")  # pylint: disable=W1309
+            print("   ➤ Make sure you've uploaded the correct certificate in the " + env_desc + " environment (Sandbox vs Prod).")
+            print("   ➤ Ensure the certificate is assigned to GUID: " + str(user_guid))
             print("Please check your upload and assignment and try again later.")
             return
         if resp.status_code == 200:
-            print(f"✅ VaultN recognized the certificate and the token is valid in {env_desc}.")
+            print("✅ VaultN recognized the certificate and the token is valid in {}.".format(env_desc))
         else:
-            print(f"⚠️ Unexpected response from VaultN: {resp.status_code}")
+            print("⚠️ Unexpected response from VaultN: {}".format(resp.status_code))
             print(resp.text)
             print("Please check your upload and assignment and try again later.")
     except requests.RequestException as exc:
@@ -444,14 +444,14 @@ def main():
     user_guid, cert_created = check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid)
     try:
         token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
-        print("\n🔐 Bearer Token (valid for 1 year, {}):".format(env_desc))
+        print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
         # Box drawing for token usage info (retyped to ensure no f-string or hidden chars)
         print(" ┌────────────────────────────────────────────────────────────────────┐")
         print(" │  Use this token in Authorization headers as shown below:          │")
         print(" └────────────────────────────────────────────────────────────────────┘")
         if isinstance(token, bytes):
             token = token.decode("utf-8")
-        print("\nAuthorization: Bearer {}\n".format(token))
+        print(f"\nAuthorization: Bearer {token}\n")
         decoded = jwt.decode(token, options={"verify_signature": False})
         exp = datetime.datetime.fromtimestamp(decoded["exp"], tz=datetime.timezone.utc)
         iat = datetime.datetime.fromtimestamp(decoded["iat"], tz=datetime.timezone.utc)

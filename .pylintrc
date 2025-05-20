@@ -10,6 +10,7 @@ disable=
     C0415,  # import-outside-toplevel
     C0103,  # invalid-name
     E0611,  # no-name-in-module
+    W1309
 
 [FORMAT]
 max-line-length=120
@@ -18,4 +19,4 @@ max-line-length=120
 output-format = colorized
 
 [TYPECHECK]
-ignored-modules=jwt,requests,cryptography 
+ignored-modules=jwt,requests,cryptography
