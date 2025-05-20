@@ -399,6 +399,18 @@ def print_production_checklist():
     print("For any issues, contact support@vaultn.com.\n")
 
 
+def prompt_guid(saved_guid=None, env_desc=None):
+    """Prompt for GUID, showing the saved value as default."""
+    prompt = f"Enter your VaultN User GUID"
+    if env_desc:
+        prompt += f" for {env_desc}"
+    if saved_guid:
+        prompt += f" [{saved_guid}]"
+    prompt += ": "
+    entered = input(prompt).strip()
+    return entered if entered else saved_guid
+
+
 def main():
     """Main entry point for VaultNAuth CLI."""
     # Always ask for environment first
@@ -421,11 +433,15 @@ def main():
     print(f"\n🔔 Active Environment: {env_desc}\n")
     if env == "production":
         print_production_checklist()
-    user_guid = args.guid or config.get("DEFAULT", "guid", fallback=None)
-    user_guid, cert_created = check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid)
+    saved_guid = args.guid or config.get("DEFAULT", "guid", fallback=None)
+    user_guid = args.guid or prompt_guid(saved_guid, env_desc)
+    if not user_guid:
+        print("❌ GUID is required.")
+        sys.exit(1)
     # Save config for next time
     config["DEFAULT"] = {"env": env, "guid": user_guid}
     save_config(config)
+    user_guid, cert_created = check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid)
     try:
         token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
         print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
