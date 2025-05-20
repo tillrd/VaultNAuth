@@ -378,7 +378,7 @@ def check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid
             sys.exit(1)
         print(f"\n✅ Certificate '{crt_path}' has been created.")
         print(f"\nPlease upload this certificate to the VaultN portal and assign it to your GUID in {env_desc} environment.")
-        input("Once uploaded, press Enter to continue...")
+        print("Once uploaded, press Enter to continue...")
         cert_created = True
     else:
         if is_cert_expired(crt_path):
