@@ -445,6 +445,7 @@ def main():
     try:
         token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
         print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
+        # Box drawing for token usage info (retyped to ensure no f-string or hidden chars)
         print(" ┌────────────────────────────────────────────────────────────────────┐")
         print(" │  Use this token in Authorization headers as shown below:          │")
         print(" └────────────────────────────────────────────────────────────────────┘")
