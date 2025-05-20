@@ -4,24 +4,44 @@
 
 # 🚀 VaultNAuth
 
-A developer-friendly CLI tool for generating and testing JWT tokens with self-signed certificates for VaultN API authentication.
+A developer-friendly CLI tool for generating and testing JWT tokens with self-signed certificates for VaultN API authentication. Supports both Sandbox and Production environments with enhanced security features and user experience.
 
 ---
 
 ## ✨ Features
-- 🔒 **Automatic Certificate Generation**: Creates self-signed certificates if missing.
-- 🗂️ **Certificate Management**: All certs are stored in the `certificates/` directory (auto-ignored for safety).
-- 🧑‍💻 **Manual GUID Input**: Enter your VaultN User GUID at runtime.
-- 🛡️ **JWT Token Generation**: Securely signs tokens with your private key.
-- 🌐 **VaultN API Integration**: Instantly tests your token against the VaultN Sandbox API.
-- 🕵️ **Interactive Certificate Upload Flow**: Guides you to upload and assign your cert before proceeding.
-- 🔁 **Retry Logic**: If VaultN doesn't recognize your cert, you can retry after uploading.
+- 🔒 **Automatic Certificate Generation**: Creates self-signed certificates if missing
+- 🗂️ **Certificate Management**: All certs are stored in the `certificates/` directory (auto-ignored for safety)
+- 🧑‍💻 **Environment Selection**: Choose between Sandbox and Production environments
+- 🔄 **Configuration Persistence**: Saves your environment and GUID preferences
+- 🛡️ **Enhanced Security**:
+  - Certificate expiration checking
+  - Secure password handling for PFX files
+  - Cloudflare block detection
+- 🎯 **Smart Token Generation**:
+  - JWT tokens signed with your private key
+  - Automatic thumbprint verification
+  - One-year token validity
+- 🌐 **Comprehensive API Testing**:
+  - Instant token verification
+  - API connectivity checks
+  - Detailed response analysis
+- 📋 **Production Checklist**: Guided steps for production deployment
+- 🔍 **Advanced Diagnostics**:
+  - Certificate registration verification
+  - Detailed error messages
+  - Connection troubleshooting
 
 ---
 
 ## 🔗 How Verification Works
 
-After generating your JWT token, VaultNAuth automatically verifies your setup by making a request to the VaultN API `/api/v1/ping` endpoint. This endpoint checks both connectivity and the validity of your JWT authorization. If your certificate and token are correctly configured and uploaded, you will receive a successful response from VaultN.
+VaultNAuth provides a comprehensive verification process:
+
+1. **Certificate Validation**: Checks for expiration and proper registration
+2. **Token Generation**: Creates a JWT token with proper headers and claims
+3. **API Verification**: Tests the token against VaultN's `/api/v1/ping` endpoint
+4. **Response Analysis**: Provides detailed feedback on authentication status
+5. **Troubleshooting**: Detects common issues like Cloudflare blocks or unregistered certificates
 
 - **API Reference:** [VaultN /api/v1/ping](https://vaultn.readme.io/reference/get_api-v1-ping-3) 
 
@@ -50,38 +70,57 @@ After generating your JWT token, VaultNAuth automatically verifies your setup by
    source .venv/bin/activate
    python app.py
    ```
-2. **Follow the prompts:**
-   - Enter your VaultN User GUID when asked.
-   - If no certificate is found, the app will generate one for you in `certificates/`.
-   - Upload `certificates/sample.crt` to the VaultN portal and assign it to your GUID.
-   - Press Enter to continue and validate your setup.
 
-3. **Copy your JWT token:**
-   - The app will display a valid JWT token and show the VaultN API response.
+2. **Environment Selection:**
+   - Choose between Sandbox (testing) and Production environments
+   - Review the production checklist when selecting production
+
+3. **Configuration:**
+   - Enter your VaultN User GUID (saved for future use)
+   - Provide PFX password (or generate new certificate if missing)
+   - Upload certificate to VaultN portal when prompted
+
+4. **Token Generation and Testing:**
+   - Get your JWT token with full validity information
+   - Verify certificate registration with VaultN
+   - Test API connectivity
+   - View detailed response analysis
 
 ---
 
 ## 📝 Example Output
 
 ```
-Enter your VaultN User GUID: 123e4567-e89b-12d3-a456-426614174000
+🌍 Select environment:
+  1. Sandbox (testing)
+  2. Production (live)
+Enter 1 for Sandbox or 2 for Production: 1
 
-✅ Certificate 'certificates/sample.crt' found. Proceeding...
+🔔 Active Environment: Sandbox
+
+Enter your VaultN User GUID for Sandbox: 123e4567-e89b-12d3-a456-426614174000
+
+✅ Certificate 'certificates/sample.crt' found. Proceeding in Sandbox...
 
 🔑 SHA-1 Certificate Thumbprint (VaultN): AB:CD:EF:12:34:56:78:90:AB:CD:EF:12:34:56:78:90:AB:CD:EF:12
-⚠️ WARNING: This certificate thumbprint was NOT found in VaultN uploaded list.
-   Upload `sample.crt` to VaultN, or verify the correct certificate is selected.
 
-🔍 Verifying certificate thumbprint in VaultN...
-✅ VaultN recognized the certificate and the token is valid.
+🔐 Bearer Token (valid for 1 year, Sandbox):
+ ┌────────────────────────────────────────────────────────────────────┐
+ │  Use this token in Authorization headers as shown below:          │
+ └────────────────────────────────────────────────────────────────────┘
 
-🔐 Bearer Token (valid for 1 year):
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 
-🌐 Testing VaultN API...
+📆 Token Timestamps (UTC):
+ ├─ Issued At (iat): 2024-04-20T10:30:00+00:00
+ └─ Expires At (exp): 2025-04-20T10:30:00+00:00
+
+🔍 Verifying certificate thumbprint in VaultN (Sandbox)...
+✅ VaultN recognized the certificate and the token is valid in Sandbox.
+
+🌐 Testing VaultN API on Sandbox...
 ✅ Response Status: 200
-📄 Response Body:
-"Hello user@example.com"
+📄 Response Body: "Hello user@example.com"
 ```
 
 ---
@@ -92,9 +131,12 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
 VaultNAuth/
 ├── app.py              # Main application script
 ├── requirements.txt    # Python dependencies
-├── .gitignore          # Ignores sensitive and unnecessary files
-├── certificates/       # (Auto-created) Stores generated certs (ignored in git)
-└── README.md           # This file
+├── .gitignore         # Ignores sensitive and unnecessary files
+├── .pylintrc          # Pylint configuration
+├── certificates/      # (Auto-created) Stores generated certs (ignored in git)
+│   ├── sample.crt    # Sandbox certificate
+│   └── prod_sample.crt # Production certificate
+└── README.md          # This file
 ```
 
 ---
@@ -102,6 +144,7 @@ VaultNAuth/
 ## 🧩 Requirements
 - Python 3.8+
 - OpenSSL (for certificate generation)
+- Internet connection for API testing
 
 ---
 
