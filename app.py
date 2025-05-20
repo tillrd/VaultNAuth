@@ -290,9 +290,9 @@ def verify_certificate_in_vaultn(token, user_guid, api_base_url, env_desc):
             print("Please check your upload and assignment and try again later.")
             return
         if resp.status_code == 200:
-            print("✅ VaultN recognized the certificate and the token is valid in {}.".format(env_desc))
+            print(f"✅ VaultN recognized the certificate and the token is valid in {env_desc}.")
         else:
-            print("⚠️ Unexpected response from VaultN: {}".format(resp.status_code))
+            print(f"⚠️ Unexpected response from VaultN: {resp.status_code}")
             print(resp.text)
             print("Please check your upload and assignment and try again later.")
     except requests.RequestException as exc:
