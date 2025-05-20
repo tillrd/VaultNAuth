@@ -274,7 +274,7 @@ def verify_certificate_in_vaultn(token, user_guid, api_base_url, env_desc):
         resp = requests.get(
             url,
             headers={
-                "Authorization": f"Bearer {token}",
+                "Authorization": "Bearer " + token,
                 "accept": "application/json"
             },
             timeout=10
