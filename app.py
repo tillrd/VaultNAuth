@@ -5,31 +5,35 @@ import subprocess
 import datetime
 import base64
 import hashlib
-import jwt
-import requests
 import argparse
 import configparser
 from getpass import getpass, GetPassWarning
 import warnings
+
+import jwt
+import requests
+from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization.pkcs12 import load_key_and_certificates
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography import x509
 
 CONFIG_PATH = os.path.expanduser("~/.vaultnauthrc")
 
 def load_config():
+    """Load configuration from the config file."""
     config = configparser.ConfigParser()
     if os.path.exists(CONFIG_PATH):
         config.read(CONFIG_PATH)
     return config
 
 def save_config(config):
-    with open(CONFIG_PATH, "w") as f:
+    """Save configuration to the config file."""
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
         config.write(f)
 
 def parse_args():
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="VaultNAuth CLI")
     parser.add_argument("--env", choices=["sandbox", "production"], help="Environment to use")
     parser.add_argument("--guid", help="VaultN User GUID")
@@ -52,6 +56,7 @@ ENVIRONMENTS = {
 }
 
 def select_environment():
+    """Prompt user to select environment (sandbox or production)."""
     print("\n🌍 Select environment:")
     print("  1. Sandbox (testing)")
     print("  2. Production (live)")
@@ -64,7 +69,12 @@ def select_environment():
         print("Invalid choice. Please enter 1 or 2.")
 
 def generate_pfx_if_missing(pfx_path, password):
-    """Generate a self-signed certificate and related files if missing."""
+    """Generate a self-signed certificate and related files if missing.
+
+    Args:
+        pfx_path (str): Path where the PFX file should be created
+        password (bytes): Password to protect the PFX file
+    """
     if os.path.exists(pfx_path):
         return
 
@@ -78,6 +88,7 @@ def generate_pfx_if_missing(pfx_path, password):
     cert_file = os.path.join(certs_dir, "temp_cert.pem")
     req_file = os.path.join(certs_dir, "temp_req.pem")
 
+    # Generate certificate files
     subprocess.run([
         "openssl", "req", "-new", "-newkey", "rsa:2048", "-nodes",
         "-keyout", key_file, "-out", req_file,
@@ -97,6 +108,7 @@ def generate_pfx_if_missing(pfx_path, password):
         "-passout", f"pass:{password.decode()}"
     ], check=True)
 
+    # Create additional certificate formats
     base = os.path.splitext(pfx_path)[0]
     crt_path = base + ".crt"
     cer_path = base + ".cer"
@@ -117,10 +129,12 @@ def generate_pfx_if_missing(pfx_path, password):
     with open(priv_pem_path, "wb") as f:
         f.write(key_data)
 
+    # Clean up temporary files
     os.remove(cert_file)
     os.remove(key_file)
     os.remove(req_file)
 
+    # Verify key pair matches
     crt = x509.load_pem_x509_certificate(cert_data, backend=default_backend())
     pubkey_from_cert = crt.public_key()
     privkey = serialization.load_pem_private_key(
@@ -176,7 +190,15 @@ def test_vaultn_api(token, api_base_url, env_desc):
 
 
 def load_private_key_and_cert(pfx_path, password):
-    """Load private key and certificate from a PFX file."""
+    """Load private key and certificate from a PFX file.
+
+    Args:
+        pfx_path (str): Path to the PFX file
+        password (bytes): Password to decrypt the PFX file
+
+    Returns:
+        tuple: (private_key, certificate)
+    """
     with open(pfx_path, 'rb') as f:
         pfx_data = f.read()
     private_key, cert, _ = load_key_and_certificates(
@@ -186,7 +208,16 @@ def load_private_key_and_cert(pfx_path, password):
 
 
 def get_jwt_payload(user_guid, issuer, audience):
-    """Return the JWT payload dict."""
+    """Return the JWT payload dictionary.
+
+    Args:
+        user_guid (str): The VaultN User GUID
+        issuer (str): The token issuer
+        audience (str): The token audience
+
+    Returns:
+        dict: The JWT payload
+    """
     now = datetime.datetime.now(datetime.timezone.utc)
     return {
         "sub": user_guid,
@@ -198,7 +229,14 @@ def get_jwt_payload(user_guid, issuer, audience):
 
 
 def get_jwt_headers(cert):
-    """Return JWT headers with x5t and kid from cert."""
+    """Return JWT headers with x5t and kid from cert.
+
+    Args:
+        cert: The X.509 certificate object
+
+    Returns:
+        tuple: (headers_dict, kid_string)
+    """
     cert_der = cert.public_bytes(encoding=serialization.Encoding.DER)
     hash_sha1 = hashlib.sha1(cert_der).digest()
     x5t = base64.urlsafe_b64encode(hash_sha1).decode().rstrip('=')
@@ -262,8 +300,19 @@ def verify_certificate_in_vaultn(token, user_guid, api_base_url, env_desc):
         print("Please check your upload and assignment and try again later.")
 
 
-def generate_token(user_guid, issuer, audience, pfx_path, pfx_password, api_base_url, env_desc):
-    """Generate a JWT token signed with the private key from the PFX file."""
+def generate_token(user_guid, issuer, audience, pfx_path, pfx_password):
+    """Generate a JWT token signed with the private key from the PFX file.
+
+    Args:
+        user_guid (str): The VaultN User GUID
+        issuer (str): The token issuer
+        audience (str): The token audience
+        pfx_path (str): Path to the PFX file
+        pfx_password (bytes): Password for the PFX file
+
+    Returns:
+        str: The generated JWT token
+    """
     generate_pfx_if_missing(pfx_path, pfx_password)
     private_key, cert = load_private_key_and_cert(pfx_path, pfx_password)
     pem_private_key = private_key.private_bytes(
@@ -284,6 +333,7 @@ def generate_token(user_guid, issuer, audience, pfx_path, pfx_password, api_base
 
 
 def get_pfx_password(cli_password=None):
+    """Get password for the PFX file, either from CLI argument or by prompting."""
     if cli_password:
         return cli_password.encode()
     try:
@@ -300,6 +350,7 @@ def get_pfx_password(cli_password=None):
 
 
 def is_cert_expired(cert_path):
+    """Check if a certificate is expired."""
     try:
         with open(cert_path, "rb") as f:
             cert_data = f.read()
@@ -314,6 +365,7 @@ def is_cert_expired(cert_path):
 
 
 def check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid=None):
+    """Check certificate existence and validity, prepare if needed."""
     if user_guid is None:
         user_guid = input(f"Enter your VaultN User GUID for {env_desc}: ").strip()
     cert_created = False
@@ -337,6 +389,7 @@ def check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid
 
 
 def print_production_checklist():
+    """Display the production environment checklist."""
     print("\n🚦 Production Environment Checklist:")
     print("  1. Whitelist your server IPs in the VaultN portal.")
     print("  2. Upload your PRODUCTION certificate (not the sandbox one) and assign it to your GUID.")
@@ -374,7 +427,7 @@ def main():
     config["DEFAULT"] = {"env": env, "guid": user_guid}
     save_config(config)
     try:
-        token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password, api_base_url, env_desc)
+        token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
         print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
         print(" ┌────────────────────────────────────────────────────────────────────┐")
         print(" │  Use this token in Authorization headers as shown below:          │")

@@ -10,26 +10,14 @@ A developer-friendly CLI tool for generating and testing JWT tokens with self-si
 
 ## ✨ Features
 - 🔒 **Automatic Certificate Generation**: Creates self-signed certificates if missing
-- 🗂️ **Certificate Management**: All certs are stored in the `certificates/` directory (auto-ignored for safety)
+- 🗂️ **Certificate Management**: All certs are stored in the `certificates/` directory
 - 🧑‍💻 **Environment Selection**: Choose between Sandbox and Production environments
 - 🔄 **Configuration Persistence**: Saves your environment and GUID preferences
-- 🛡️ **Enhanced Security**:
-  - Certificate expiration checking
-  - Secure password handling for PFX files
-  - Cloudflare block detection
-- 🎯 **Smart Token Generation**:
-  - JWT tokens signed with your private key
-  - Automatic thumbprint verification
-  - One-year token validity
-- 🌐 **Comprehensive API Testing**:
-  - Instant token verification
-  - API connectivity checks
-  - Detailed response analysis
+- 🛡️ **Enhanced Security**: Certificate expiration checking and secure password handling
+- 🎯 **Smart Token Generation**: JWT tokens with automatic thumbprint verification
+- 🌐 **Comprehensive API Testing**: Instant token verification and connectivity checks
 - 📋 **Production Checklist**: Guided steps for production deployment
-- 🔍 **Advanced Diagnostics**:
-  - Certificate registration verification
-  - Detailed error messages
-  - Connection troubleshooting
+- 🔍 **Advanced Diagnostics**: Certificate verification and detailed error messages
 
 ---
 
