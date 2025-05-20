@@ -444,7 +444,7 @@ def main():
     user_guid, cert_created = check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid)
     try:
         token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
-        print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
+        print("\n🔐 Bearer Token (valid for 1 year, {}):".format(env_desc))
         # Box drawing for token usage info (retyped to ensure no f-string or hidden chars)
         print(" ┌────────────────────────────────────────────────────────────────────┐")
         print(" │  Use this token in Authorization headers as shown below:          │")
