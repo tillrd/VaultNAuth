@@ -166,3 +166,24 @@ Pull requests and issues are welcome! Please open an issue to discuss your idea 
 MIT License. See [LICENSE](LICENSE) for details.
 
 # trigger docker build
+
+## ⚠️ OS Security Notes
+
+### macOS
+On first launch, you may see a warning that the app cannot be opened because the developer cannot be verified.
+To open it:
+1. Right-click (or Control-click) the binary and choose **Open**.
+2. In the dialog, click **Open** again.
+
+### Windows
+On first launch, Windows may warn that the app is from an unknown publisher.
+To run it:
+1. Click **More info**.
+2. Click **Run anyway**.
+
+### Linux
+Most Linux distros do not block unsigned binaries, but you may need to set the file as executable:
+```sh
+chmod +x VaultNAuth-linux-x86_64
+./VaultNAuth-linux-x86_64
+```
