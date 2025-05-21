@@ -187,3 +187,26 @@ Most Linux distros do not block unsigned binaries, but you may need to set the f
 chmod +x VaultNAuth-linux-x86_64
 ./VaultNAuth-linux-x86_64
 ```
+
+---
+
+## 📦 Downloading and Using the Source Code
+
+You can always download the source code from the [Releases page](https://github.com/tillrd/VaultNAuth/releases) or by cloning the repository:
+
+```sh
+git clone https://github.com/tillrd/VaultNAuth.git
+cd VaultNAuth
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+---
+
+## 🚫 Local Binary Builds
+
+Standalone binaries for Linux, macOS, and Windows are now built and attached automatically to each release by GitHub Actions. You do not need to build them locally or use PyInstaller yourself.
+
+If you want to use the CLI from source, just follow the instructions above.
