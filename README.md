@@ -48,28 +48,6 @@ VaultNAuth provides a comprehensive verification process:
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
-
-## 🐳 Docker Usage
-
-You can run VaultNAuth directly from Docker:
-
-```sh
-docker pull ghcr.io/tillrd/vaultnauth:latest
-docker run -it --rm ghcr.io/tillrd/vaultnauth:latest
-```
-
-This will launch the interactive CLI in a container.
-
-### Persisting Certificates
-
-To keep generated certificates on your host machine, run:
-
-```sh
-docker run -it --rm -v $PWD/certificates:/app/certificates ghcr.io/tillrd/vaultnauth:latest
-```
-
-All certificates will be available in the `certificates` folder in your current directory.
-
 ---
 
 ## 🚦 Usage
@@ -94,6 +72,29 @@ All certificates will be available in the `certificates` folder in your current 
    - Verify certificate registration with VaultN
    - Test API connectivity
    - View detailed response analysis
+
+---
+
+## 🐳 Docker Usage
+
+You can run VaultNAuth directly from Docker:
+
+```sh
+docker pull ghcr.io/tillrd/vaultnauth:latest
+docker run -it --rm ghcr.io/tillrd/vaultnauth:latest
+```
+
+This will launch the interactive CLI in a container.
+
+### Persisting Certificates
+
+To keep generated certificates on your host machine, run:
+
+```sh
+docker run -it --rm -v $PWD/certificates:/app/certificates ghcr.io/tillrd/vaultnauth:latest
+```
+
+All certificates will be available in the `certificates` folder in your current directory.
 
 ---
 
