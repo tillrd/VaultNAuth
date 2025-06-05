@@ -163,11 +163,5 @@ Pull requests and issues are welcome! Please open an issue to discuss your idea 
 
 ---
 
-## ⚠️ Docker Image Notice
-
-All previously published Docker images and packages have been deleted from the GitHub Container Registry (GHCR) for this repository. The image will be rebuilt and published automatically on the next push to the `master` or `main` branch.
-
-You can always build and run the Docker image locally using the instructions below.
-
 ## 📄 License
 MIT License. See [LICENSE](LICENSE) for details.
