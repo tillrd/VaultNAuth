@@ -265,16 +265,6 @@ def print_thumbprint_info(kid):
     print(f"\n🔑 SHA-1 Certificate Thumbprint (VaultN, hex): {fingerprint}")
     print(f"🔑 Raw Thumbprint (hex, no colons): {kid_hex}")
     print(f"🔑 Thumbprint (base64url, JWT kid/x5t): {kid}")
-    known_uploaded = {
-        "5625A9ED086B6EF60B45EAE95329F171615780B1",
-        "230C09BD60E050E5E6DA6D3AC0B3B49C92560687",
-        "9665D87B321BE24C58511F4A826F5C8F75DB1597",
-        "CCB713A48BBCE086A73CFD08CB0333ECF6A25A1E",
-        "0B010A41ABA29812DE87CDC834E071EE2F93C8BE"
-    }
-    if kid_hex not in known_uploaded:
-        print("⚠️ WARNING: This certificate thumbprint was NOT found in VaultN uploaded list.")
-        print("   Upload `sample.crt` to VaultN, or verify the correct certificate is selected.")
 
 
 def verify_certificate_in_vaultn(token, user_guid, api_base_url, env_desc):
