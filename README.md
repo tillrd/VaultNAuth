@@ -8,6 +8,14 @@ A developer-friendly CLI tool for generating and testing JWT tokens with self-si
 
 ---
 
+# ⚠️ Docker Image Notice
+
+All previously published Docker images and packages have been deleted from the GitHub Container Registry (GHCR) for this repository. The image will be rebuilt and published automatically on the next push to the `master` or `main` branch.
+
+You can always build and run the Docker image locally using the instructions below.
+
+---
+
 ## ✨ Features
 - 🔒 **Automatic Certificate Generation**: Creates self-signed certificates if missing
 - 🗂️ **Certificate Management**: All certs are stored in the `certificates/` directory
@@ -77,11 +85,11 @@ VaultNAuth provides a comprehensive verification process:
 
 ## 🐳 Docker Usage
 
-You can run VaultNAuth directly from Docker:
+You can build and run VaultNAuth directly from Docker:
 
 ```sh
-docker pull ghcr.io/tillrd/vaultnauth:latest
-docker run -it --rm ghcr.io/tillrd/vaultnauth:latest
+docker build -t vaultnauth:latest .
+docker run -it --rm vaultnauth:latest
 ```
 
 This will launch the interactive CLI in a container.
@@ -91,7 +99,7 @@ This will launch the interactive CLI in a container.
 To keep generated certificates on your host machine, run:
 
 ```sh
-docker run -it --rm -v $PWD/certificates:/app/certificates ghcr.io/tillrd/vaultnauth:latest
+docker run -it --rm -v $PWD/certificates:/app/certificates vaultnauth:latest
 ```
 
 All certificates will be available in the `certificates` folder in your current directory.
