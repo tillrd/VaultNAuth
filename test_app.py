@@ -15,4 +15,4 @@ def test_generate_pfx_creates_files(tmp_path):
     assert (certs_dir / "sample.crt").exists()
     assert (certs_dir / "sample.cer").exists()
     assert (certs_dir / "sample_public_cert.pem").exists()
-    assert (certs_dir / "sample_private_key.pem").exists() 
+    assert (certs_dir / "sample_private_key.pem").exists()
