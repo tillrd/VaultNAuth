@@ -9,8 +9,9 @@ import argparse
 import configparser
 from getpass import getpass, GetPassWarning
 import warnings
+import json
 
-import jwt
+from jose import jwt as jose_jwt
 import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -218,13 +219,15 @@ def get_jwt_payload(user_guid, issuer, audience):
     Returns:
         dict: The JWT payload
     """
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+    exp = now + 60 * 60 * 24 * 365  # 1 year
     return {
-        "sub": user_guid,
+        "sub": user_guid.upper(),
         "iss": issuer,
         "aud": audience,
-        "exp": now + datetime.timedelta(days=365),
-        "iat": now
+        "exp": exp,
+        "iat": now,
+        "nbf": now
     }
 
 
@@ -240,7 +243,7 @@ def get_jwt_headers(cert):
     cert_der = cert.public_bytes(encoding=serialization.Encoding.DER)
     hash_sha1 = hashlib.sha1(cert_der).digest()
     x5t = base64.urlsafe_b64encode(hash_sha1).decode().rstrip('=')
-    kid = hash_sha1.hex().upper()
+    kid = hash_sha1.hex().upper()  # Use hex, not base64url
     return {
         'alg': 'RS256',
         'typ': 'JWT',
@@ -251,9 +254,17 @@ def get_jwt_headers(cert):
 
 def print_thumbprint_info(kid):
     """Print thumbprint info and check against known uploaded certs."""
-    fingerprint = ':'.join(a + b for a, b in zip(kid[::2], kid[1::2]))
-    print(f"\n🔑 SHA-1 Certificate Thumbprint (VaultN): {fingerprint}")
-    print(f"🔑 Raw Thumbprint (no colons): {kid}")
+    # Print both base64url and hex for clarity
+    # Convert base64url kid to hex for comparison
+    try:
+        kid_bytes = base64.urlsafe_b64decode(kid + '==')
+        kid_hex = kid_bytes.hex().upper()
+    except Exception:
+        kid_hex = '(invalid base64)'
+    fingerprint = ':'.join(a + b for a, b in zip(kid_hex[::2], kid_hex[1::2])) if kid_hex != '(invalid base64)' else kid_hex
+    print(f"\n🔑 SHA-1 Certificate Thumbprint (VaultN, hex): {fingerprint}")
+    print(f"🔑 Raw Thumbprint (hex, no colons): {kid_hex}")
+    print(f"🔑 Thumbprint (base64url, JWT kid/x5t): {kid}")
     known_uploaded = {
         "5625A9ED086B6EF60B45EAE95329F171615780B1",
         "230C09BD60E050E5E6DA6D3AC0B3B49C92560687",
@@ -261,7 +272,7 @@ def print_thumbprint_info(kid):
         "CCB713A48BBCE086A73CFD08CB0333ECF6A25A1E",
         "0B010A41ABA29812DE87CDC834E071EE2F93C8BE"
     }
-    if kid not in known_uploaded:
+    if kid_hex not in known_uploaded:
         print("⚠️ WARNING: This certificate thumbprint was NOT found in VaultN uploaded list.")
         print("   Upload `sample.crt` to VaultN, or verify the correct certificate is selected.")
 
@@ -322,7 +333,7 @@ def generate_token(user_guid, issuer, audience, pfx_path, pfx_password):
     )
     payload = get_jwt_payload(user_guid, issuer, audience)
     headers, kid = get_jwt_headers(cert)
-    token = jwt.encode(
+    token = jose_jwt.encode(
         payload,
         pem_private_key,
         algorithm="RS256",
@@ -411,6 +422,22 @@ def prompt_guid(saved_guid=None, env_desc=None):
     return entered if entered else saved_guid
 
 
+def print_jwt_header(token):
+    header_b64 = token.split('.')[0]
+    header_b64 += '=' * (-len(header_b64) % 4)
+    header_json = base64.urlsafe_b64decode(header_b64.encode('utf-8')).decode('utf-8')
+    print("\nJWT Header:", header_json)
+
+
+# Manual JWT payload decode (no signature verification, for display only)
+def print_jwt_payload(token):
+    payload_b64 = token.split('.')[1]
+    payload_b64 += '=' * (-len(payload_b64) % 4)
+    payload_json = base64.urlsafe_b64decode(payload_b64.encode('utf-8')).decode('utf-8')
+    print("\nJWT Payload:", payload_json)
+    return json.loads(payload_json)
+
+
 def main():
     """Main entry point for VaultNAuth CLI."""
     # Always ask for environment first
@@ -426,7 +453,7 @@ def main():
     pfx_path = os.path.join(certs_dir, f"{cert_base}.pfx")
     crt_path = os.path.join(certs_dir, f"{cert_base}.crt")
     pfx_password = get_pfx_password(args.pfx_password)
-    audience = "VAULTN"
+    audience = "VaultN"
     issuer = "Self"
     env_desc = env_conf["desc"]
     api_base_url = env_conf["api_base_url"]
@@ -444,6 +471,8 @@ def main():
     user_guid, cert_created = check_and_prepare_cert(crt_path, pfx_path, pfx_password, env_desc, user_guid)
     try:
         token = generate_token(user_guid, issuer, audience, pfx_path, pfx_password)
+        print_jwt_header(token if isinstance(token, str) else token.decode('utf-8'))
+        payload = print_jwt_payload(token if isinstance(token, str) else token.decode('utf-8'))
         print(f"\n🔐 Bearer Token (valid for 1 year, {env_desc}):")
         # Box drawing for token usage info (retyped to ensure no f-string or hidden chars)
         print(" ┌────────────────────────────────────────────────────────────────────┐")
@@ -452,9 +481,8 @@ def main():
         if isinstance(token, bytes):
             token = token.decode("utf-8")
         print(f"\nAuthorization: Bearer {token}\n")
-        decoded = jwt.decode(token, options={"verify_signature": False})
-        exp = datetime.datetime.fromtimestamp(decoded["exp"], tz=datetime.timezone.utc)
-        iat = datetime.datetime.fromtimestamp(decoded["iat"], tz=datetime.timezone.utc)
+        exp = datetime.datetime.fromtimestamp(payload["exp"], tz=datetime.timezone.utc)
+        iat = datetime.datetime.fromtimestamp(payload["iat"], tz=datetime.timezone.utc)
         print("📆 Token Timestamps (UTC):")
         print(" ├─ Issued At (iat):", iat.isoformat())
         print(" └─ Expires At (exp):", exp.isoformat())
@@ -468,7 +496,7 @@ def main():
         if env == "production":
             print("\n[TODO] Check partner connection status and catalog sharing in production.\n")
     except Exception as exc:
-        print(f"❌ Error generating token: {exc}")
+        print(f"❌ Error generating or decoding token: {exc}")
 
 
 if __name__ == "__main__":
