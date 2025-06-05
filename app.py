@@ -423,6 +423,7 @@ def prompt_guid(saved_guid=None, env_desc=None):
 
 
 def print_jwt_header(token):
+    """Print the JWT header from a JWT token string."""
     header_b64 = token.split('.')[0]
     header_b64 += '=' * (-len(header_b64) % 4)
     header_json = base64.urlsafe_b64decode(header_b64.encode('utf-8')).decode('utf-8')
@@ -431,6 +432,7 @@ def print_jwt_header(token):
 
 # Manual JWT payload decode (no signature verification, for display only)
 def print_jwt_payload(token):
+    """Print and return the JWT payload from a JWT token string."""
     payload_b64 = token.split('.')[1]
     payload_b64 += '=' * (-len(payload_b64) % 4)
     payload_json = base64.urlsafe_b64decode(payload_b64.encode('utf-8')).decode('utf-8')
